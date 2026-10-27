@@ -83,3 +83,17 @@ func TestRPCErrorIsTyped(t *testing.T) {
 		t.Fatalf("err = %v, want RPCError -32601", err)
 	}
 }
+
+func TestSendTokenSetsTokenID(t *testing.T) {
+	seen := map[string]map[string]any{}
+	c := fakeWallet(t, map[string]any{"transfer": map[string]any{"tx_hash": "t"}}, seen)
+	if _, err := c.SendToken(context.Background(), "tok", Destination{Address: "a", Amount: 1}, Destination{Address: "b", Amount: 1}); err != nil {
+		t.Fatal(err)
+	}
+	dests := seen["transfer"]["destinations"].([]any)
+	for _, d := range dests {
+		if d.(map[string]any)["token_id"] != "tok" {
+			t.Fatalf("destination without token_id: %v", d)
+		}
+	}
+}

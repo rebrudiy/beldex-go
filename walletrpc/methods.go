@@ -78,7 +78,8 @@ type Transfer struct {
 	Height        uint64          `json:"height"`
 	Timestamp     uint64          `json:"timestamp"`
 	Amount        uint64          `json:"amount"`
-	Type          string          `json:"type"` // "in", "out", "pool", ...
+	Type          string          `json:"type"`               // "in", "out", "pool", ...
+	TokenID       string          `json:"token_id,omitempty"` // empty = native BDX
 	Locked        bool            `json:"locked"`
 	SubaddrIndex  SubaddressIndex `json:"subaddr_index"`
 	Confirmations uint64          `json:"confirmations"`
@@ -111,6 +112,7 @@ func (c *Client) Incoming(ctx context.Context, indices ...uint32) ([]Transfer, e
 type Destination struct {
 	Address string `json:"address"`
 	Amount  uint64 `json:"amount"`
+	TokenID string `json:"token_id,omitempty"` // empty = native BDX
 }
 
 type SentTx struct {
@@ -137,9 +139,15 @@ func (c *Client) Send(ctx context.Context, flash bool, dests ...Destination) (Se
 
 // CheckTxKey proves a payment of a given tx to address using the sender's tx key.
 type TxCheck struct {
-	Received      uint64 `json:"received"`
-	InPool        bool   `json:"in_pool"`
-	Confirmations uint64 `json:"confirmations"`
+	Received      uint64          `json:"received"`
+	TokenReceived []TokenReceived `json:"token_received,omitempty"`
+	InPool        bool            `json:"in_pool"`
+	Confirmations uint64          `json:"confirmations"`
+}
+
+type TokenReceived struct {
+	TokenID string `json:"token_id"`
+	Amount  uint64 `json:"amount"`
 }
 
 func (c *Client) CheckTxKey(ctx context.Context, txid, txKey, address string) (TxCheck, error) {
